@@ -1,0 +1,5 @@
+WeaponData
+{
+	"OnWeaponPrimaryAttack"	"Accuracy_OnWeaponPrimaryAttack"
+	"OnProjectileCollision"	"Accuracy_OnProjectileCollision"
+}

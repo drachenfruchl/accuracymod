@@ -1,0 +1,32 @@
+{
+	"Name": "Ceaika.Accuracy",
+	"Description": "[[@ceaika]]\n\nExtremely amazing and superb accuracy tracker with lifetime stats",
+	"Version": "2.1.0",
+	"LoadPriority": 6767,
+	"ConVars": [
+		{ "Name": "acc_pos_x",         "DefaultValue": "0.42"  },
+		{ "Name": "acc_pos_y",         "DefaultValue": "0.935" },
+		{ "Name": "acc_font_size",     "DefaultValue": "16"    },
+		{ "Name": "acc_always_show",   "DefaultValue": "0"     },
+		{ "Name": "acc_show_shots",    "DefaultValue": "1"     },
+		{ "Name": "acc_show_hits",     "DefaultValue": "1"     },
+		{ "Name": "acc_show_lifetime", "DefaultValue": "1"     }
+	],
+	"Scripts": [
+		{
+			"Path": "Accuracy.nut",
+			"RunOn": "(CLIENT || SERVER)",
+			"ClientCallback": {
+				"After": "Accuracy_Init"
+			}
+		},
+		{
+			"Path": "AccuracySettings.nut",
+			"RunOn": "UI",
+			"UICallback": {
+				"Before": "AccuracySettings_Init"
+			}
+		}
+	],
+	"Localisation": []
+}
