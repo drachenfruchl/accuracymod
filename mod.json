@@ -4,8 +4,12 @@
 	"Version": "3.1.0",
 	"LoadPriority": 6767,
 	"ConVars": [
-		{ "Name": "cv_acc_pos_x",         "DefaultValue": "0.42"  },
-		{ "Name": "cv_acc_pos_y",         "DefaultValue": "0.935" },
+		{ "Name": "cv_acc_simple_posX",         "DefaultValue": "0.42"  },
+		{ "Name": "cv_acc_simple_posY",         "DefaultValue": "0.935" },
+
+		{ "Name": "cv_acc_advanced_posX",         "DefaultValue": "0.42"  },
+		{ "Name": "cv_acc_advanced_posY",         "DefaultValue": "0.935" },
+
 		{ "Name": "cv_acc_font_size",     "DefaultValue": "16"    },
 		{ "Name": "cv_acc_always_show",   "DefaultValue": "0"     },
 		{ "Name": "cv_acc_show_shots",    "DefaultValue": "1"     },
