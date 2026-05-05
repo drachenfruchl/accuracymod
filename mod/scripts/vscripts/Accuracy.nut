@@ -30,37 +30,85 @@ struct {
 	string currentWeapon = ""
 } ACCURACY
 
-struct {
-	int displayType = 0
-
-	vector simpleAnchor = < 0.42, 0.935, 0.0 >
-	array<var> simpleElements
-
-	vector advancedAnchor = < 0.1, 0.2, 0.0 >
-	array<var> advancedElements
-} RUI
-
-enum eRuiParts {
-	// simple
-	header,
-	displayTypeArrowR,
-	displayTypeArrowL,
-	totalShots,
-	totalHits,
-	overallAccuracy,
-	combo,
-	comboMax,
-	rank
-
-	// advanced...
-}
-
 enum eDisplayTypes {
-	match,
 	recent10,
 	session,
 	lifetime
 }
+
+enum eSSections {
+	header,
+	active,
+	sub,
+	nav
+}
+enum eSHeader {
+	weaponName,
+	rank,
+	score
+}
+enum eSMatch {
+	overallAccuracy,
+	totalShots,
+	totalHits,
+	combo,
+	comboMax
+}
+enum eSSession {
+	overallAccuracy,
+	totalShots,
+	totalHits,
+	comboMax
+}
+enum eSLifetime {
+	overallAccuracy,
+	totalShots,
+	totalHits,
+	comboMax
+}
+enum eSNav {
+	displayTypeArrowL,
+	displayType
+	displayTypeArrowR
+}
+
+struct {
+	int displayType = 0
+	vector anchor // Defined in Init
+
+	// RuiSetString( SIMPLE.allElements[eSSections.nav][eSNav.displayTypeArrowR], "msgText", "gabagool" )
+
+	array< array<var> > allElements
+	array<var> header
+	array<var> active
+	array<var> sub
+	array<var> nav
+
+	// Subs to switch to
+	array<var> recent10
+	array<var> session
+	array<var> lifetime
+} SIMPLE
+
+struct {
+	int displayType = 0
+	vector anchor // Defined in Init
+
+	array< array<var> > allElements
+	array<var> header
+	array<var> active
+	array<var> sub
+	array<var> nav
+} ADVANCED
+
+// Simple New
+// header // [WeaponName] [Rank]
+// *varies depending on displaytype*
+// active // match: [overallAccuracy] | [totalShots] [totalHits] | [combo] (max. [comboMax])
+// sub // recent10: [ Acc | Combo ] [ Acc | Combo ] [ Acc | Combo ] [ Acc | Combo ] . . .
+// sub // session: [overallAccuracy] | [totalShots] [totalHits] | [comboMax]
+// sub // lifetime: [overallAccuracy] | [totalShots] [totalHits] | [comboMax]
+// navigation // [displayTypeArrowL] [displayType] [displayTypeArrowR]
 
 struct {
 	table<string, int> lifetimeHits
@@ -90,23 +138,25 @@ string function GetWeaponDisplayName( entity weapon ){
 }
 
 void function OnSelectedWeaponChanged( entity weapon ){
-	// RuiSetString( RUI.simpleElements[ eRuiParts.], "msgText", getWeaponImage( weapon ) )
+	string weaponDisplayName = weapon.GetWeaponDisplayName()
+	RuiSetString( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], "msgText", weaponDisplayName )
 }
 
 // Init ============================================================================================================
 
 void function Accuracy_Init(){
-	RUI.simpleAnchor = < 
-		GetConVarFloat( "cv_acc_simple_posX" ), 
-		GetConVarFloat( "cv_acc_simple_posY" ), 
-		0.0 
+	SIMPLE.anchor = <
+		GetConVarFloat( "cv_acc_simple_posX" ),
+		GetConVarFloat( "cv_acc_simple_posY" ),
+		0.0
 	>
 
-	RUI.advancedAnchor = < 
-		GetConVarFloat( "cv_acc_advanced_posX" ), 
-		GetConVarFloat( "cv_acc_advanced_posY" ), 
-		0.0 
+	ADVANCED.anchor = <
+		GetConVarFloat( "cv_acc_advanced_posX" ),
+		GetConVarFloat( "cv_acc_advanced_posY" ),
+		0.0
 	>
+
 	// LoadLifetimeStats()
 	// thread WatchWeaponSwitch()
 	// AddLocalPlayerDidDamageCallback( Accuracy_OnDamage )
@@ -119,57 +169,76 @@ void function Accuracy_Init(){
 
 // Rui creation ====================================================================================================
 
-var function MakeRUI( string msg )
-{
+var function MakeRUI( string msg ){
 	var rui = RuiCreate( $"ui/cockpit_console_text_top_left.rpak", clGlobal.topoCockpitHudPermanent, RUI_DRAW_COCKPIT, 0 )
 
-	RuiSetInt( 		rui, "maxLines", 	1 			)
-	RuiSetInt( 		rui, "lineNum", 	1 			)
-	RuiSetFloat2( 	rui, "msgPos", 		< 0,0,0 > 		)
-	RuiSetFloat( 	rui, "msgFontSize", 15.0 	)
-	RuiSetFloat( 	rui, "msgAlpha", 	1.0 		)
-	RuiSetFloat3( 	rui, "msgColor", 	COLORS.WHITE 		)
-	RuiSetFloat( 	rui, "thicken", 	0.0		 	)
-	RuiSetString( 	rui, "msgText", 	msg 		)
+	RuiSetInt( 		rui, "maxLines", 	1 				)
+	RuiSetInt( 		rui, "lineNum", 	1 				)
+	RuiSetFloat2( 	rui, "msgPos", 		< 0, 0, 0 > 	)
+	RuiSetFloat( 	rui, "msgFontSize", 15.0 			)
+	RuiSetFloat( 	rui, "msgAlpha", 	1.0 			)
+	RuiSetFloat3( 	rui, "msgColor", 	COLORS.WHITE 	)
+	RuiSetFloat( 	rui, "thicken", 	0.0		 		)
+	RuiSetString( 	rui, "msgText", 	msg 			)
 
 	return rui
 }
 
 void function CreateAccuracyRUI(){
-	RUI.simpleElements[ eRuiParts.header ] 				= MakeRUI( "Header" )
-	RUI.simpleElements[ eRuiParts.displayTypeArrowR ] 	= MakeRUI( ">" )
-	RUI.simpleElements[ eRuiParts.displayTypeArrowL ] 	= MakeRUI( "<" )
-	RUI.simpleElements[ eRuiParts.totalShots ]			= MakeRUI( "Total shots" )
-	RUI.simpleElements[ eRuiParts.totalHits ]			= MakeRUI( "Total hits" )
-	RUI.simpleElements[ eRuiParts.overallAccuracy ]		= MakeRUI( "Overall accuracy" )
-	RUI.simpleElements[ eRuiParts.combo ]				= MakeRUI( "Combo" )
-	RUI.simpleElements[ eRuiParts.comboMax ]			= MakeRUI( "Combo max" )
-	RUI.simpleElements[ eRuiParts.rank ]				= MakeRUI( "Rank" )
-	// ...
+	// Simple
+	// Header
+	SIMPLE.allElements[eSSections.header][eSHeader.weaponName] 	= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.rank] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.score] 		= MakeRUI( "" )
 
-	SetInitialRUIPos()
+	// Active
+	SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy] 	= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.active][eSMatch.totalShots] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.active][eSMatch.totalHits] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.active][eSMatch.combo] 			= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.active][eSMatch.comboMax] 		= MakeRUI( "" )
+
+	// Subs
+	// Recent10
+	SIMPLE.][] 	= MakeRUI( "" )
+
+	// Match
+	// Lifetime
 }
 
 void function SetInitialRUIPos(){
-	
 	float size = GetConVarFloat( "acc_font_size" )
 	float lineGap = size * 0.0013
 
-	// Simple
-	vector anchor = RUI.simpleAnchor
+	// Simple Old
+	// [ ACC ] wepDisplay
+	// 67.2% Accuracy | 321 Shots 174 Hits | x8 Combo ( pb 13 )
+	// all time 23.4% | 7123 Shots 6523 Hits
 
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.header ], 			"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowR ], 	"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowL ], 	"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalShots ], 		"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalHits ], 			"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.overallAccuracy ], 	"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.combo ], 				"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.comboMax ], 			"msgPos",	anchor	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.rank ], 				"msgPos",	anchor	)
+	// Simple New
+	// header // [WeaponName] [Rank]
+	// *varies depending on displaytype*
+	// active, sub // match: [overallAccuracy] | [totalShots] [totalHits] | [combo] (max. [comboMax])
+	// sub // recent10: [ Acc | Combo ] [ Acc | Combo ] [ Acc | Combo ] [ Acc | Combo ] . . .
+	// sub // session: [overallAccuracy] | [totalShots] [totalHits] | [comboMax]
+	// sub // lifetime: [overallAccuracy] | [totalShots] [totalHits] | [comboMax]
+	// navigation // [displayTypeArrowL] [displayType] [displayTypeArrowR]
+
+	vector a = RUI.simpleAnchor
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.header ], 			"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowR ], 	"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowL ], 	"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalShots ], 		"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalHits ], 			"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.overallAccuracy ], 	"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.combo ], 				"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.comboMax ], 			"msgPos",	< a.x, a.y, a.z >	)
+	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.rank ], 				"msgPos",	< a.x, a.y, a.z >	)
 
 	// Advanced
-	anchor = RUI.advancedAnchor
+	a = RUI.advancedAnchor
+
+
 }
 
 
@@ -179,17 +248,17 @@ void function UpdateAccuracyRUI(){
 
 
 	switch( RUI.displayType ){
-		case eDisplayTypes.match:
-			
-			break
+		// case eDisplayTypes.match:
+		//
+		// 	break
 		case eDisplayTypes.last10:
-			
+
 			break
 		case eDisplayTypes.session:
-			
+
 			break
 		case eDisplayTypes.lifetime:
-			
+
 			break
 	}
 
