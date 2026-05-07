@@ -79,10 +79,10 @@ struct {
 	// RuiSetString( SIMPLE.allElements[eSSections.nav][eSNav.displayTypeArrowR], "msgText", "gabagool" )
 
 	array< array<var> > allElements
-	array<var> header
-	array<var> active
-	array<var> sub
-	array<var> nav
+	// array<var> header
+	// array<var> active
+	// array<var> sub
+	// array<var> nav
 
 	// Subs to switch to
 	array<var> recent10
@@ -95,10 +95,10 @@ struct {
 	vector anchor // Defined in Init
 
 	array< array<var> > allElements
-	array<var> header
-	array<var> active
-	array<var> sub
-	array<var> nav
+	// array<var> header
+	// array<var> active
+	// array<var> sub
+	// array<var> nav
 } ADVANCED
 
 // Simple New
@@ -121,7 +121,7 @@ struct {
 
 // Utility =========================================================================================================
 
-string function GetWeaponImage( entity weapon ){
+string function GetWeaponImageString( entity weapon ){
 	string weaponClassName = weapon.GetWeaponClassName()
 	string itemImageString = ""
 	try{
@@ -165,6 +165,7 @@ void function Accuracy_Init(){
 	// RegisterButtonPressedCallback( KEY_TAB, OpenAdvancedAccMenu )
 
 	CreateAccuracyRUI()
+	SetInitialRUIpos()
 }
 
 // Rui creation ====================================================================================================
@@ -185,11 +186,11 @@ var function MakeRUI( string msg ){
 }
 
 void function CreateAccuracyRUI(){
-	// Simple
+// Simple
 	// Header
-	SIMPLE.allElements[eSSections.header][eSHeader.weaponName] 	= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.header][eSHeader.rank] 		= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.header][eSHeader.score] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.weaponName] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.rank] 			= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.score] 			= MakeRUI( "" )
 
 	// Active
 	SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy] 	= MakeRUI( "" )
@@ -199,14 +200,28 @@ void function CreateAccuracyRUI(){
 	SIMPLE.allElements[eSSections.active][eSMatch.comboMax] 		= MakeRUI( "" )
 
 	// Subs
-	// Recent10
-	SIMPLE.][] 	= MakeRUI( "" )
+		// Recent10
+		for (int i = 0; i < 10; i++ )
+			SIMPLE.allElements[eSSections.sub][i] = MakeRUI( "" )
 
-	// Match
-	// Lifetime
+		// Match
+		SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy]		= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.totalShots] 			= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.totalHits] 			= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.combo] 				= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.comboMax] 			= MakeRUI( "" )
+
+		// Lifetime
+		SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy] 	= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots] 		= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits] 		= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax] 		= MakeRUI( "" )
+
+// Advanced
+	// . . .
 }
 
-void function SetInitialRUIPos(){
+void function SetInitialRUIpos(){
 	float size = GetConVarFloat( "acc_font_size" )
 	float lineGap = size * 0.0013
 
@@ -224,42 +239,71 @@ void function SetInitialRUIPos(){
 	// sub // lifetime: [overallAccuracy] | [totalShots] [totalHits] | [comboMax]
 	// navigation // [displayTypeArrowL] [displayType] [displayTypeArrowR]
 
-	vector a = RUI.simpleAnchor
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.header ], 			"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowR ], 	"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.displayTypeArrowL ], 	"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalShots ], 		"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.totalHits ], 			"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.overallAccuracy ], 	"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.combo ], 				"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.comboMax ], 			"msgPos",	< a.x, a.y, a.z >	)
-	RuiSetFloat2( 	RUI.simpleElements[ eRuiParts.rank ], 				"msgPos",	< a.x, a.y, a.z >	)
+	// Simple
+	vector a = SIMPLE.anchor
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.rank], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.score], 			"msgPos",	< a.x, a.y, a.z > )
+
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy], 	"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalShots], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalHits], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.combo], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
+
+	for (int i = 0; i < 10; i++ )
+		RuiSetFloat2( SIMPLE.allElements[eSSections.sub][i], 						"msgPos",	< a.x, a.y, a.z > )
+
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalShots], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalHits], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.combo], 				"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
+
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy], 	"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits], 		"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
 
 	// Advanced
-	a = RUI.advancedAnchor
-
-
+	a = ADVANCED.anchor
 }
 
-
+bool function isAdvancedMenu(){
+	return false
+}
 
 void function UpdateAccuracyRUI(){
-	// Simple
+	if( !isAdvancedMenu() ){
+		switch( SIMPLE.displayType ){
+				// case eDisplayTypes.match:
+				//
+				// 	break
+			case eDisplayTypes.last10:
 
+				break
+			case eDisplayTypes.session:
 
-	switch( RUI.displayType ){
-		// case eDisplayTypes.match:
-		//
-		// 	break
-		case eDisplayTypes.last10:
+				break
+			case eDisplayTypes.lifetime:
 
-			break
-		case eDisplayTypes.session:
+				break
+		}
+	} else {
+		switch( ADVANCED.displayType ){
+				// case eDisplayTypes.match:
+				//
+				// 	break
+			case eDisplayTypes.last10:
 
-			break
-		case eDisplayTypes.lifetime:
+				break
+			case eDisplayTypes.session:
 
-			break
+				break
+			case eDisplayTypes.lifetime:
+
+				break
+		}
 	}
 
 	// Advanced
