@@ -142,6 +142,9 @@ void function OnSelectedWeaponChanged( entity weapon ){
 	RuiSetString( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], "msgText", weaponDisplayName )
 }
 
+void function showRUIsection( int section ){
+}
+
 // Init ============================================================================================================
 
 void function Accuracy_Init(){
@@ -177,7 +180,7 @@ var function MakeRUI( string msg ){
 	RuiSetInt( 		rui, "lineNum", 	1 				)
 	RuiSetFloat2( 	rui, "msgPos", 		< 0, 0, 0 > 	)
 	RuiSetFloat( 	rui, "msgFontSize", 15.0 			)
-	RuiSetFloat( 	rui, "msgAlpha", 	1.0 			)
+	RuiSetFloat( 	rui, "msgAlpha", 	0.0 			)
 	RuiSetFloat3( 	rui, "msgColor", 	COLORS.WHITE 	)
 	RuiSetFloat( 	rui, "thicken", 	0.0		 		)
 	RuiSetString( 	rui, "msgText", 	msg 			)
@@ -188,42 +191,45 @@ var function MakeRUI( string msg ){
 void function CreateAccuracyRUI(){
 // Simple
 	// Header
-	SIMPLE.allElements[eSSections.header][eSHeader.weaponName] 		= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.header][eSHeader.rank] 			= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.header][eSHeader.score] 			= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.header][eSHeader.weaponName] 		= MakeRUI( "Volt" )
+	SIMPLE.allElements[eSSections.header][eSHeader.rank] 			= MakeRUI( "SS" )
+	SIMPLE.allElements[eSSections.header][eSHeader.score] 			= MakeRUI( "6547" )
 
 	// Active
-	SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy] 	= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.active][eSMatch.totalShots] 		= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.active][eSMatch.totalHits] 		= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.active][eSMatch.combo] 			= MakeRUI( "" )
-	SIMPLE.allElements[eSSections.active][eSMatch.comboMax] 		= MakeRUI( "" )
+	SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy] 	= MakeRUI( "67.67%" )
+	SIMPLE.allElements[eSSections.active][eSMatch.totalShots] 		= MakeRUI( "450" )
+	SIMPLE.allElements[eSSections.active][eSMatch.totalHits] 		= MakeRUI( "362" )
+	SIMPLE.allElements[eSSections.active][eSMatch.combo] 			= MakeRUI( "5" )
+	SIMPLE.allElements[eSSections.active][eSMatch.comboMax] 		= MakeRUI( "9" )
 
 	// Subs
 		// Recent10
 		for (int i = 0; i < 10; i++ )
-			SIMPLE.allElements[eSSections.sub][i] = MakeRUI( "" )
+			SIMPLE.allElements[eSSections.sub][i] = MakeRUI( format( "[%.2f|%i]", RandomFloat( 100.0 ), RandomInt( 15 ) ) )
 
 		// Match
-		SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy]		= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSMatch.totalShots] 			= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSMatch.totalHits] 			= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSMatch.combo] 				= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSMatch.comboMax] 			= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy]		= MakeRUI( "67.67%" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.totalShots] 			= MakeRUI( "450" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.totalHits] 			= MakeRUI( "362" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.combo] 				= MakeRUI( "5" )
+		SIMPLE.allElements[eSSections.sub][eSMatch.comboMax] 			= MakeRUI( "9" )
 
 		// Lifetime
-		SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy] 	= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots] 		= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits] 		= MakeRUI( "" )
-		SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax] 		= MakeRUI( "" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy] 	= MakeRUI( "69.69%"" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots] 		= MakeRUI( "540" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits] 		= MakeRUI( "622" )
+		SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax] 		= MakeRUI( "2" )
 
 // Advanced
 	// . . .
 }
 
 void function SetInitialRUIpos(){
-	float size = GetConVarFloat( "acc_font_size" )
-	float lineGap = size * 0.0013
+	vector anchor
+	float fontSize
+	float gapHeight
+	float offsetY
+	float offsetX
 
 	// Simple Old
 	// [ ACC ] wepDisplay
@@ -240,33 +246,45 @@ void function SetInitialRUIpos(){
 	// navigation // [displayTypeArrowL] [displayType] [displayTypeArrowR]
 
 	// Simple
-	vector a = SIMPLE.anchor
-	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.rank], 			"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.score], 			"msgPos",	< a.x, a.y, a.z > )
+	anchor = SIMPLE.anchor
+	fontSize = GetConVarFloat( "cv_acc_simple_fontSize" )
+	gapHeight = fontSize * 0.0013
 
-	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy], 	"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalShots], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalHits], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.combo], 			"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
+	// First row
+	offsetY = gapHeight * 1
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.rank], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.header][eSHeader.score], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
 
+	// Second row
+	offsetY = gapHeight * 2
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.overallAccuracy], 	"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalShots], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.totalHits], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.combo], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.active][eSMatch.comboMax], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+
+	// Third rows
+	offsetY = gapHeight * 3
+	offsetX = 0.0 // Get total element width
 	for (int i = 0; i < 10; i++ )
-		RuiSetFloat2( SIMPLE.allElements[eSSections.sub][i], 						"msgPos",	< a.x, a.y, a.z > )
+		RuiSetFloat2( SIMPLE.allElements[eSSections.sub][i], 						"msgPos",	< anchor.x + (offsetX * i), anchor.y + offsetY, 0.0 > )
 
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalShots], 			"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalHits], 			"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.combo], 				"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.overallAccuracy], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalShots], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.totalHits], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.combo], 				"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSMatch.comboMax], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
 
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy], 	"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits], 		"msgPos",	< a.x, a.y, a.z > )
-	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax], 			"msgPos",	< a.x, a.y, a.z > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.overallAccuracy], 	"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalShots], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.totalHits], 		"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
+	RuiSetFloat2( SIMPLE.allElements[eSSections.sub][eSLifetime.comboMax], 			"msgPos",	< anchor.x, anchor.y + offsetY, 0.0 > )
 
 	// Advanced
-	a = ADVANCED.anchor
+	anchor = SIMPLE.anchor
+	fontSize = GetConVarFloat( "cv_acc_advanced_fontSize" )
+	gapHeight = fontSize * 0.0013
 }
 
 bool function isAdvancedMenu(){
