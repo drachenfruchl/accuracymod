@@ -4,17 +4,18 @@
 	"Version": "3.1.0",
 	"LoadPriority": 6767,
 	"ConVars": [
-		{ "Name": "cv_acc_simple_posX",         "DefaultValue": "0.42"  },
-		{ "Name": "cv_acc_simple_posY",         "DefaultValue": "0.935" },
+		{ "Name": "cv_acc_simple_posX",			"DefaultValue": "0.42"  },
+		{ "Name": "cv_acc_simple_posY",			"DefaultValue": "0.935" },
+		{ "Name": "cv_acc_simple_fontSize", 	"DefaultValue": "16"    },
 
-		{ "Name": "cv_acc_advanced_posX",         "DefaultValue": "0.42"  },
-		{ "Name": "cv_acc_advanced_posY",         "DefaultValue": "0.935" },
+		{ "Name": "cv_acc_advanced_posX",		"DefaultValue": "0.42"  },
+		{ "Name": "cv_acc_advanced_posY",		"DefaultValue": "0.935" },
+		{ "Name": "cv_acc_advanced_fontSize",   "DefaultValue": "18"    },
 
-		{ "Name": "cv_acc_font_size",     "DefaultValue": "16"    },
-		{ "Name": "cv_acc_always_show",   "DefaultValue": "0"     },
-		{ "Name": "cv_acc_show_shots",    "DefaultValue": "1"     },
-		{ "Name": "cv_acc_show_hits",     "DefaultValue": "1"     },
-		{ "Name": "cv_acc_show_lifetime", "DefaultValue": "1"     }
+		{ "Name": "cv_acc_always_show",   		"DefaultValue": "0"     },
+		{ "Name": "cv_acc_show_shots",    		"DefaultValue": "1"     },
+		{ "Name": "cv_acc_show_hits",     		"DefaultValue": "1"     },
+		{ "Name": "cv_acc_show_lifetime", 		"DefaultValue": "1"     }
 	],
 	"Scripts": [
 		{
