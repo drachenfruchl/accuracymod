@@ -72,6 +72,31 @@ enum eSNav {
 	displayTypeArrowR
 }
 
+enum eDeductionTypes {
+	miss,
+	// blunderCombo,
+	blunderCombo5,  // Break combo after 5 consecutive hits
+	blunderCombo10, // Break combo after 10 consecutive hits
+	onehitWonder,   // Left enemy on 1hp
+	fall,           // Death by pit
+	meleed,         // Killed enemy with melee
+	gotMeleed,      // Died because of melee
+	noscoped,       // Killed enemy using noscope kraber
+	grenadiered     // Shot a grenadier bullet (4x penalty on coldwar by design)
+}
+enum eRewardTypes {
+	hit,
+	// combo,
+	combo5,       // 5 consecutive hits
+	combo10,      // 10 consecutive hits
+	combo15,      // 15 fucking consecutive hits
+	longrange50,  // Kill from 50m away
+	longrange100, // Kill from 50m away
+	longrange150, // Kill from 50m away
+	longrange200, // Kill from 50m away
+	directGrenadierHitNonCW // Direct hits using EPG, Softball etc except coldwar (kys)
+}
+
 struct {
 	int displayType = 0
 	vector anchor // Defined in Init
@@ -111,6 +136,45 @@ struct {
 // navigation // [displayTypeArrowL] [displayType] [displayTypeArrowR]
 
 struct {
+	int totalScore = 0
+
+	// Speed mult as exponential graph starting at x kmh
+	// float speedMult
+
+	// Range mult as linear graph starting at x meters
+	// float rangeMult
+
+	// Flat score mult for NPCs
+	// float npcMult = 0.2
+
+	table<int> rewardTable = {
+		[eRewardTypes.hit] 						= 10,   // Hit a shot
+		// [eRewardTypes.combo] 				= ,
+		[eRewardTypes.combo5] 					= 100,  // 5 consecutive hits
+		[eRewardTypes.combo10] 					= 1000, // 10 consecutive hits
+		[eRewardTypes.combo15] 					= 5000, // 15 fucking consecutive hits
+		[eRewardTypes.longrange50] 				= 50,   // Kill from 50m away
+		[eRewardTypes.longrange100] 			= 100,  // Kill from 50m away
+		[eRewardTypes.longrange150] 			= 250,  // Kill from 50m away
+		[eRewardTypes.longrange200] 			= 500,  // Kill from 50m away
+		[eRewardTypes.directGrenadierHitNonCW]  = 500   // Direct hits using EPG, Softball etc except coldwar (kys)
+	}
+
+	table<int> deductionTable = {
+		[eDeductionTypes.miss] 		   = 5,		  // Missed a shot
+		// [eDeductionTypes.blunderCombo  = ,
+		[eDeductionTypes.blunderCombo5]   = 20,   // Break combo after 5 consecutive hits
+		[eDeductionTypes.blunderCombo10]  = 200,  // Break combo after 10 consecutive hits
+		[eDeductionTypes.onehitWonder]    = 50,   // Left enemy on 1hp
+		[eDeductionTypes.fall]            = 1000, // Death by pit
+		[eDeductionTypes.meleed]          = 500,  // Killed enemy with melee
+		[eDeductionTypes.gotMeleed]       = 100,  // Died because of melee
+		[eDeductionTypes.noscoped]        = 300,  // Killed enemy using noscope kraber
+		[eDeductionTypes.grenadiered]     = 25    // Shot a grenadier bullet (4x penalty on coldwar by design)
+	}
+} score
+
+struct {
 	table<string, int> lifetimeHits
 	table<string, int> lifetimeShots
 	table<string, int> sessionHits
@@ -127,7 +191,7 @@ string function GetWeaponImageString( entity weapon ){
 	try{
 		itemImageString = GetItemImage( weaponClassName ).tostring()
 		itemImageString = itemImageString.slice( 2, -1 )
-    }catch(e){
+	}catch(e){
 		return ""
 	}
 	return "%$" + itemImageString + "%"
@@ -142,7 +206,36 @@ void function OnSelectedWeaponChanged( entity weapon ){
 	RuiSetString( SIMPLE.allElements[eSSections.header][eSHeader.weaponName], "msgText", weaponDisplayName )
 }
 
-void function showRUIsection( int section ){
+void function Simple_SetAlpha( float alpha ){
+	foreach( array<var> section in SIMPLE.allElements ){
+		foreach( var rui in section )
+			RuiSetFloat( rui, "msgAlpha", alpha )
+	}
+}
+
+void function Simple_SetRUISectionAlpha( int section, float alpha ){
+	foreach( var rui in SIMPLE.allElements[section] )
+		RuiSetFloat( rui, "msgAlpha", alpha )
+}
+
+void function Simple_SetRUIElementAlpha( int section, int element, float alpha ){
+	RuiSetFloat( SIMPLE.allElements[section][element], "msgAlpha", alpha )
+}
+
+void function Advanced_SetAlpha( float alpha ){
+	foreach( array<var> section in ADVANCED.allElements ){
+		foreach( var rui in section )
+			RuiSetFloat( rui, "msgAlpha", alpha )
+	}
+}
+
+void function Advanced_SetRUISectionAlpha( int section, float alpha ){
+	foreach( var rui in ADVANCED.allElements[section] )
+		RuiSetFloat( rui, "msgAlpha", alpha )
+}
+
+void function Advanced_SetRUIElementAlpha( int section, int element, float alpha ){
+	RuiSetFloat( ADVANCED.allElements[section][element], "msgAlpha", alpha )
 }
 
 // Init ============================================================================================================
@@ -327,8 +420,55 @@ void function UpdateAccuracyRUI(){
 	// Advanced
 }
 
+// miss,
+// 	// blunderCombo,
+// 	blunderCombo5,  // Break combo after 5 consecutive hits
+// 	blunderCombo10, // Break combo after 10 consecutive hits
+// 	onehitWonder,   // Left enemy on 1hp
+// 	fall,           // Death by pit
+// 	meleed,         // Killed enemy with melee
+// 	gotMeleed,      // Died because of melee
+// 	noscoped,       // Killed enemy using noscope kraber
+// 	grenadiered     // Shot a grenadier bullet (4x penalty on coldwar by design)
+// }
+// enum eRewardTypes {
+// 	hit,
+// 	// combo,
+// 	combo5,       // 5 consecutive hits
+// 	combo10,      // 10 consecutive hits
+// 	combo15,      // 15 fucking consecutive hits
+// 	longrange50,  // Kill from 50m away
+// 	longrange100, // Kill from 50m away
+// 	longrange150, // Kill from 50m away
+// 	longrange200, // Kill from 50m away
+// 	directGrenadierHitNonCW // Direct hits using EPG, Softball etc except coldwar (kys)
+// }
+void function updateScore_hitRegistered( WeaponBulletHitParams hitparams ){
+	entity hitEnt = hitparams.hitEnt
 
+	// Rewards
+	// ...
+	if( !hitEnt.IsWorld() ){
+		if( hitEnt.IsNPC() )
+			score.totalScore += score.rewardTable[eRewardTypes.hit] * score.npcMult
+		else
+			score.totalScore += score.rewardTable[eRewardTypes.hit]
+		return
+	}
 
+	// Deductions
+	// Missed shot
+	if( hitEnt.IsWorld() ){
+		score.totalScore -= score.deductionTable[eDeductionTypes.miss]
+		return
+	}
+
+	if()
+}
+
+void function updateScore_killRegistered( WeaponBulletHitParams hitparams ){
+
+}
 
 
 
@@ -377,11 +517,18 @@ var function Accuracy_OnWeaponPrimaryAttack( entity weapon, WeaponPrimaryAttackP
 	}
 	*/
 
+	// Does this work?
+	weapon.acc.lastBarrelIndex <- attackParams.barrelIndex
+
 	return weapon.GetAmmoPerShot()
 }
 
 void function Accuracy_OnWeaponBulletHit( entity weapon, WeaponBulletHitParams hitParams )
 {
+	// Does this even work?
+	if( weapon.acc.lastBarrelIndex == weapon.GetWeaponPrimaryAmmoCount() + 1 )
+		return
+
 	/*
 	entity owner = weapon.GetWeaponOwner()
 	if ( !IsValid( owner ) || owner != GetLocalViewPlayer() )

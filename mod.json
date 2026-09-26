@@ -1,8 +1,8 @@
 {
 	"Name": "Ceaika.Accuracy",
 	"Description": "[[@ceaika]]\n\nExtremely amazing and superb accuracy tracker with lifetime stats",
-	"Version": "3.1.0",
-	"LoadPriority": 6767,
+	"Version": "3.0.0",
+	"LoadPriority": 69420,
 	"ConVars": [
 		{ "Name": "cv_acc_simple_posX",			"DefaultValue": "0.42"  },
 		{ "Name": "cv_acc_simple_posY",			"DefaultValue": "0.935" },
